@@ -1,0 +1,89 @@
+﻿<Window x:Class="EtmParser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:EtmParser"
+        mc:Ignorable="d"
+        Height="450" Width="800">
+    <Window.DataContext>
+        <local:EtmParserViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <ObjectDataProvider x:Key="dataFromEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="local:CodesType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        
+        <local:CodesTypeEnumToDescriptionValueConverter x:Key="CodesTypeNameConverter" />
+        <local:StatusToAvailableParsingConverter x:Key="StatusToAvailableParsingConverter" />
+        <local:StatusToAvailableSaveSettingsConverter x:Key="StatusToAvailableSaveSettingsConverter" />
+    </Window.Resources>
+
+    <Grid Margin="12,12,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto" MinWidth="300"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Text="{Binding Status, Mode=OneWay}" Margin="0,12,0,12"/>
+
+            <TextBlock Grid.Row="1" Text="Логин "  Margin="2" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="2" Text="{Binding Login}"/>
+
+            <TextBlock Text="Пароль " Grid.Row="2" Margin="2" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Margin="2" Text="{Binding Password}"/>
+
+            <TextBlock Text="Тип кода " Grid.Row="3" Margin="2" VerticalAlignment="Center"/>
+            <ComboBox 
+                Grid.Row="3" Grid.Column="1" Margin="2" 
+                ItemsSource="{Binding Source={StaticResource dataFromEnum}}" 
+                SelectedValue="{Binding SelectedCodesType}"
+                IsEnabled="{Binding Status, Converter={StaticResource StatusToAvailableSaveSettingsConverter}}" >
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <ContentPresenter Content="{Binding Converter={StaticResource CodesTypeNameConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Button 
+                IsEnabled="{Binding Status, Converter={StaticResource StatusToAvailableSaveSettingsConverter}}" 
+                Content="Сохранить" Click="SaveSettings" 
+                Grid.Row="4" Margin="2,8"/>
+
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,40,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="{Binding FileName}"/>
+                <CheckBox Content="Характеристики товара" IsChecked="{Binding GoodsInfoRequest}" IsEnabled="{Binding Status, Converter={StaticResource StatusToAvailableParsingConverter}}"/>
+                <CheckBox Content="Остатки" IsChecked="{Binding RemainInfoRequest}" IsEnabled="{Binding Status, Converter={StaticResource StatusToAvailableParsingConverter}}"/>
+                <Button Click="StartParse" Content="Парсинг..." IsEnabled="{Binding Status, Converter={StaticResource StatusToAvailableParsingConverter}}" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Text="{Binding Progress}"/>
+
+        </Grid>
+    </Grid>
+</Window>
